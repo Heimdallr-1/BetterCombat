@@ -10,9 +10,9 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 @Mod(BetterCombatMod.ID)
-public final class BetterCombatModNeoForge {
-    public BetterCombatModNeoForge(IEventBus modEventBus) {
-//        BetterCombatMod.init();
+public final class NeoForgeMod {
+    public NeoForgeMod(IEventBus modEventBus) {
+        BetterCombatMod.init();
         SOUND_EVENTS.register(modEventBus);
     }
 
