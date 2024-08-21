@@ -1,17 +1,18 @@
 modLoader = "javafml"
 loaderVersion = "[2,)"
 #issueTrackerURL = ""
-license = "Insert License Here"
+license = "GPL-3.0"
 
 [[mods]]
 modId = "bettercombat"
 version = "${version}"
 displayName = "BetterCombat"
-authors = "Me!"
+authors = "Daedelus"
+credits="KosmX, Gecko"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+Easy, spectacular and fun melee combat system from Minecraft Dungeons.
 '''
-#logoFile = ""
+logoFile = "logo.png"
 
 [[dependencies.bettercombat]]
 modId = "neoforge"
@@ -26,6 +27,13 @@ type = "required"
 versionRange = "[1.20.4,)"
 ordering = "NONE"
 side = "BOTH"
+
+[[dependencies.bettercombat]]
+modId="playeranimator"
+type = "required"
+versionRange="[1,)"
+ordering="AFTER"
+side="BOTH"
 
 [[mixins]]
 config = "bettercombat.mixins.json"

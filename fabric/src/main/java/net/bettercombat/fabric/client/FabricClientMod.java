@@ -22,7 +22,7 @@ public class FabricClientMod implements ClientModInitializer {
             KeyBindingHelper.registerKeyBinding(keybinding);
         }
         ItemTooltipCallback.EVENT.register((itemStack, context, lines) -> {
-            WeaponAttributeTooltip.modifyTooltip(itemStack, context, lines);
+            WeaponAttributeTooltip.modifyTooltip(itemStack, lines);
         });
         ModelPredicateProviderRegistry.register(new Identifier(BetterCombatMod.ID, "loaded"), (stack, world, entity, seed) -> {
             return 1.0F;

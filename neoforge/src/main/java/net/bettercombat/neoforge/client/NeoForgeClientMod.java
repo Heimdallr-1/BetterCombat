@@ -4,9 +4,9 @@ import me.shedaniel.autoconfig.AutoConfig;
 import net.bettercombat.BetterCombatMod;
 import net.bettercombat.client.BetterCombatClientMod;
 import net.bettercombat.client.Keybindings;
-import net.bettercombat.client.animation.AnimationRegistry;
 import net.bettercombat.config.ClientConfigWrapper;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.ModelPredicateProviderRegistry;
+import net.minecraft.util.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoadingContext;
@@ -25,9 +25,11 @@ public class NeoForgeClientMod {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event){
         BetterCombatClientMod.init();
+        BetterCombatClientMod.loadAnimation();
 
-        var resourceManager = MinecraftClient.getInstance().getResourceManager();
-        AnimationRegistry.load(resourceManager);
+        ModelPredicateProviderRegistry.registerGeneric(new Identifier(BetterCombatMod.ID, "loaded"), (stack, world, entity, seed) -> {
+            return 1.0F;
+        });
 
         ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> {
             return new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> {

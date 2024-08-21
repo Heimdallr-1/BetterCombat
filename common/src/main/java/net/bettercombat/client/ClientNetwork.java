@@ -17,6 +17,7 @@ public class ClientNetwork {
     }
 
     public static void handleConfigSync(Packets.ConfigSync packet) {
+        BetterCombatMod.LOGGER.info("Received config sync packet");
         BetterCombatMod.config = packet.deserialized();
         BetterCombatClientMod.ENABLED = true;
     }
@@ -61,61 +62,5 @@ public class ClientNetwork {
                 e.printStackTrace();
             }
         });
-    }
-
-    public static void initializeHandlers() {
-//        ClientPlayNetworking.registerGlobalReceiver(Packets.AttackAnimation.ID, (client, handler, buf, responseSender) -> {
-//            final var packet = Packets.AttackAnimation.read(buf);
-//            client.execute(() -> {
-//                var entity = client.world.getEntityById(packet.playerId());
-//                if (entity instanceof PlayerEntity player
-//                        // Avoid local playback, unless replay mod is loaded
-//                        && (player != client.player || Platform.isModLoaded("replaymod")) ) {
-//                    if (packet.animationName().equals(Packets.AttackAnimation.StopSymbol)) {
-//                        ((PlayerAttackAnimatable) entity).stopAttackAnimation(packet.length());
-//                    } else {
-//                        ((PlayerAttackAnimatable) entity).playAttackAnimation(packet.animationName(), packet.animatedHand(), packet.length(), packet.upswing());
-//                    }
-//                }
-//            });
-//        });
-
-//        ClientPlayNetworking.registerGlobalReceiver(Packets.AttackSound.ID, (client, handler, buf, responseSender) -> {
-//            final var packet = Packets.AttackSound.read(buf);
-//            client.execute(() -> {
-//                try {
-//                    if (BetterCombatClientMod.config.weaponSwingSoundVolume == 0) {
-//                        return;
-//                    }
-//
-//                    var soundEvent = Registries.SOUND_EVENT.get(new Identifier(packet.soundId()));
-//                    var configVolume = BetterCombatClientMod.config.weaponSwingSoundVolume;
-//                    var volume = packet.volume() * ((float) Math.min(Math.max(configVolume, 0), 100) / 100F);
-//                    client.world.playSound(
-//                            packet.x(),
-//                            packet.y(),
-//                            packet.z(),
-//                            soundEvent,
-//                            SoundCategory.PLAYERS,
-//                            volume,
-//                            packet.pitch(),
-//                            true);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            });
-//        });
-
-//        ClientPlayNetworking.registerGlobalReceiver(Packets.WeaponRegistrySync.ID, (client, handler, buf, responseSender) -> {
-//            WeaponRegistry.decodeRegistry(buf);
-//        });
-
-//        ClientPlayNetworking.registerGlobalReceiver(Packets.ConfigSync.ID, (client, handler, buf, responseSender) -> {
-//            var config = Packets.ConfigSync.read(buf);
-//            // var gson = new Gson();
-//            // System.out.println("Received server config: " + gson.toJson(config));
-//            BetterCombatMod.config = config;
-//            BetterCombatClientMod.ENABLED = true;
-//        });
     }
 }

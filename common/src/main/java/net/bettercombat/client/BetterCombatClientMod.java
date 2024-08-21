@@ -16,8 +16,6 @@ public class BetterCombatClientMod {
         AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         // Intuitive way to load a config :)
         config = AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
-
-        ClientNetwork.initializeHandlers();
     }
 
     public static void loadAnimation() {

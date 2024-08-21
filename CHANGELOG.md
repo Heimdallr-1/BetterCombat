@@ -1,3 +1,9 @@
+# 1.9.0
+
+- Welcome NeoForge support, goodbye legacy Forge!
+- Rewritten networking stack to improve platform support
+- Config and weapon attribute registry are now synced during connection (network configuration stage)
+
 # 1.8.7
 
 - Port to 1.20.4, thank you to @ellet0, #332

@@ -15,7 +15,7 @@ import net.tinyconfig.ConfigManager;
 import org.slf4j.Logger;
 
 public class BetterCombatMod {
-    static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     public static final String ID = "bettercombat";
     public static ServerConfig config;
     private static FallbackConfig fallbackDefault = FallbackConfig.createDefault();

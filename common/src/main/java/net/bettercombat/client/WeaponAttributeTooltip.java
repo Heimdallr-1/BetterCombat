@@ -13,7 +13,7 @@ import java.util.List;
 import static net.minecraft.item.ItemStack.MODIFIER_FORMAT;
 
 public class WeaponAttributeTooltip {
-    public static void modifyTooltip(ItemStack itemStack, TooltipContext context, List<Text> lines) {
+    public static void modifyTooltip(ItemStack itemStack, List<Text> lines) {
         var attributes = WeaponRegistry.getAttributes(itemStack);
         if (attributes != null) {
             // Looking for last attribute line in the list
