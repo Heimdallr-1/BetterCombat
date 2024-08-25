@@ -3,12 +3,15 @@ package net.bettercombat.logic;
 import net.bettercombat.BetterCombatMod;
 import net.bettercombat.config.FallbackConfig;
 import net.bettercombat.utils.PatternMatching;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.Item;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 
 public class WeaponAttributesFallback {
@@ -33,7 +36,7 @@ public class WeaponAttributesFallback {
                 // If - no registration & matches regex
                 if (WeaponRegistry.getAttributes(itemId) == null
                         && PatternMatching.matches(itemId.toString(), fallbackOption.item_id_regex)) {
-                    var container = WeaponRegistry.containers.get(new Identifier(fallbackOption.weapon_attributes));
+                    var container = WeaponRegistry.containers.get(Identifier.of(fallbackOption.weapon_attributes));
                     // If assignable attributes are known
                     if (container != null) {
                         WeaponRegistry.resolveAndRegisterAttributes(itemId, container);
@@ -44,13 +47,11 @@ public class WeaponAttributesFallback {
         }
     }
 
-    private static boolean hasAttributeModifier(Item item, EntityAttribute searchedAttribute) {
-        var searchedAttributeId = Registries.ATTRIBUTE.getId(searchedAttribute);
-        var attributes = item.getAttributeModifiers(EquipmentSlot.MAINHAND);
-        for (var entry: attributes.entries()) {
-            var attribute = entry.getKey();
-            var attributeId = Registries.ATTRIBUTE.getId(attribute);
-            if (attributeId != null && attributeId.equals(searchedAttributeId)) {
+    private static boolean hasAttributeModifier(Item item, RegistryEntry<EntityAttribute> searchedAttribute) {
+        var attributes = item.getComponents().get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+        for (var entry: attributes.modifiers()) {
+            var attribute = entry.attribute();
+            if (attribute == searchedAttribute || attribute.equals(searchedAttribute)) {
                 return true;
             }
         }

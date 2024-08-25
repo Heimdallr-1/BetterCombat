@@ -23,7 +23,7 @@ public class ForgeClientModEvents {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event){
-        ModelPredicateProviderRegistry.registerGeneric(new Identifier(BetterCombat.MODID, "loaded"), (stack, world, entity, seed) -> {
+        ModelPredicateProviderRegistry.registerGeneric(Identifier.of(BetterCombat.MODID, "loaded"), (stack, world, entity, seed) -> {
             return 1.0F;
         });
 

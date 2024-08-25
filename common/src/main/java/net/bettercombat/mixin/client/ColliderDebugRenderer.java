@@ -73,89 +73,89 @@ public class ColliderDebugRenderer {
                         .scale(0.95)
                         .updateVertex())
                 .collect(Collectors.toList());
-        drawOutline(matrices, obb, collidingObbs, collides);
+//        drawOutline(matrices, obb, collidingObbs, collides);
     }
 
-    private void drawOutline(MatrixStack matrixStack, OrientedBoundingBox obb, List<OrientedBoundingBox> otherObbs, boolean collides) {
-        RenderSystem.enableDepthTest();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBuffer();
-        RenderSystem.disableBlend();
-        RenderSystem.lineWidth(1.0f);
-        bufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-
-        if (collides) {
-            //System.out.println("Drawing collider +");
-            outlineOBB(matrixStack, obb, bufferBuilder,
-                    1, 0, 0,
-                    1, 0, 0,0.5F);
-        } else {
-            //System.out.println("Drawing collider -");
-            outlineOBB(matrixStack, obb, bufferBuilder,
-                    0, 1, 0,
-                    1, 1, 0,0.5F);
-        }
-        look(matrixStack, obb, bufferBuilder, 0.5F);
-
-        for(OrientedBoundingBox otherObb: otherObbs){
-            outlineOBB(matrixStack, otherObb, bufferBuilder,
-                    1, 0, 0,
-                    1, 0, 0,0.5F);
-        }
-
-        tessellator.draw();
-
-        RenderSystem.lineWidth(1.0f);
-        RenderSystem.enableBlend();
-    }
-
-    private void outlineOBB(MatrixStack matrixStack, OrientedBoundingBox box, BufferBuilder buffer,
-                            float red1, float green1, float blue1,
-                            float red2, float green2, float blue2,
-                            float alpha) {
-        Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
-        buffer.vertex(matrix4f, (float) box.vertex1.x, (float) box.vertex1.y, (float) box.vertex1.z).color(0, 0, 0, 0).next();
-
-        buffer.vertex(matrix4f, (float) box.vertex1.x, (float) box.vertex1.y, (float) box.vertex1.z).color(red1, green1, blue1, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex2.x, (float) box.vertex2.y, (float) box.vertex2.z).color(red1, green1, blue1, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex3.x, (float) box.vertex3.y, (float) box.vertex3.z).color(red1, green1, blue1, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex4.x, (float) box.vertex4.y, (float) box.vertex4.z).color(red1, green1, blue1, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex1.x, (float) box.vertex1.y, (float) box.vertex1.z).color(red1, green1, blue1, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex5.x, (float) box.vertex5.y, (float) box.vertex5.z).color(red2, green2, blue2, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex6.x, (float) box.vertex6.y, (float) box.vertex6.z).color(red2, green2, blue2, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex2.x, (float) box.vertex2.y, (float) box.vertex2.z).color(red1, green1, blue1, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex6.x, (float) box.vertex6.y, (float) box.vertex6.z).color(red2, green2, blue2, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex7.x, (float) box.vertex7.y, (float) box.vertex7.z).color(red2, green2, blue2, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex3.x, (float) box.vertex3.y, (float) box.vertex3.z).color(red1, green1, blue1, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex7.x, (float) box.vertex7.y, (float) box.vertex7.z).color(red2, green2, blue2, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex8.x, (float) box.vertex8.y, (float) box.vertex8.z).color(red2, green2, blue2, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex4.x, (float) box.vertex4.y, (float) box.vertex4.z).color(red1, green1, blue1, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex8.x, (float) box.vertex8.y, (float) box.vertex8.z).color(red2, green2, blue2, alpha).next();
-        buffer.vertex(matrix4f, (float) box.vertex5.x, (float) box.vertex5.y, (float) box.vertex5.z).color(red2, green2, blue2, alpha).next();
-
-        buffer.vertex(matrix4f, (float) box.vertex5.x, (float) box.vertex5.y, (float) box.vertex5.z).color(0, 0, 0, 0).next();
-        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 0, 0, 0).next();
-    }
-
-    private void look(MatrixStack matrixStack, OrientedBoundingBox box, BufferBuilder buffer, float alpha) {
-        Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
-        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 0, 0, alpha).next();
-
-        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(1, 0, 0, alpha).next();
-        buffer.vertex(matrix4f, (float) box.axisZ.x, (float) box.axisZ.y, (float) box.axisZ.z).color(1, 0, 0, alpha).next();
-        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(1, 0, 0, alpha).next();
-
-        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 1, 0, alpha).next();
-        buffer.vertex(matrix4f, (float) box.axisY.x, (float) box.axisY.y, (float) box.axisY.z).color(0, 1, 0, alpha).next();
-        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 1, 0, alpha).next();
-
-        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 0, 1, alpha).next();
-        buffer.vertex(matrix4f, (float) box.axisX.x, (float) box.axisX.y, (float) box.axisX.z).color(0, 0, 1, alpha).next();
-        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 0, 1, alpha).next();
-
-        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 0, 0, alpha).next();
-    }
+//    private void drawOutline(MatrixStack matrixStack, OrientedBoundingBox obb, List<OrientedBoundingBox> otherObbs, boolean collides) {
+//        RenderSystem.enableDepthTest();
+//        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+//        Tessellator tessellator = Tessellator.getInstance();
+//        BufferBuilder bufferBuilder = tessellator.getBuffer();
+//        RenderSystem.disableBlend();
+//        RenderSystem.lineWidth(1.0f);
+//        bufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
+//
+//        if (collides) {
+//            //System.out.println("Drawing collider +");
+//            outlineOBB(matrixStack, obb, bufferBuilder,
+//                    1, 0, 0,
+//                    1, 0, 0,0.5F);
+//        } else {
+//            //System.out.println("Drawing collider -");
+//            outlineOBB(matrixStack, obb, bufferBuilder,
+//                    0, 1, 0,
+//                    1, 1, 0,0.5F);
+//        }
+//        look(matrixStack, obb, bufferBuilder, 0.5F);
+//
+//        for(OrientedBoundingBox otherObb: otherObbs){
+//            outlineOBB(matrixStack, otherObb, bufferBuilder,
+//                    1, 0, 0,
+//                    1, 0, 0,0.5F);
+//        }
+//
+//        tessellator.draw();
+//
+//        RenderSystem.lineWidth(1.0f);
+//        RenderSystem.enableBlend();
+//    }
+//
+//    private void outlineOBB(MatrixStack matrixStack, OrientedBoundingBox box, BufferBuilder buffer,
+//                            float red1, float green1, float blue1,
+//                            float red2, float green2, float blue2,
+//                            float alpha) {
+//        Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
+//        buffer.vertex(matrix4f, (float) box.vertex1.x, (float) box.vertex1.y, (float) box.vertex1.z).color(0, 0, 0, 0).next();
+//
+//        buffer.vertex(matrix4f, (float) box.vertex1.x, (float) box.vertex1.y, (float) box.vertex1.z).color(red1, green1, blue1, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex2.x, (float) box.vertex2.y, (float) box.vertex2.z).color(red1, green1, blue1, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex3.x, (float) box.vertex3.y, (float) box.vertex3.z).color(red1, green1, blue1, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex4.x, (float) box.vertex4.y, (float) box.vertex4.z).color(red1, green1, blue1, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex1.x, (float) box.vertex1.y, (float) box.vertex1.z).color(red1, green1, blue1, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex5.x, (float) box.vertex5.y, (float) box.vertex5.z).color(red2, green2, blue2, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex6.x, (float) box.vertex6.y, (float) box.vertex6.z).color(red2, green2, blue2, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex2.x, (float) box.vertex2.y, (float) box.vertex2.z).color(red1, green1, blue1, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex6.x, (float) box.vertex6.y, (float) box.vertex6.z).color(red2, green2, blue2, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex7.x, (float) box.vertex7.y, (float) box.vertex7.z).color(red2, green2, blue2, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex3.x, (float) box.vertex3.y, (float) box.vertex3.z).color(red1, green1, blue1, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex7.x, (float) box.vertex7.y, (float) box.vertex7.z).color(red2, green2, blue2, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex8.x, (float) box.vertex8.y, (float) box.vertex8.z).color(red2, green2, blue2, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex4.x, (float) box.vertex4.y, (float) box.vertex4.z).color(red1, green1, blue1, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex8.x, (float) box.vertex8.y, (float) box.vertex8.z).color(red2, green2, blue2, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.vertex5.x, (float) box.vertex5.y, (float) box.vertex5.z).color(red2, green2, blue2, alpha).next();
+//
+//        buffer.vertex(matrix4f, (float) box.vertex5.x, (float) box.vertex5.y, (float) box.vertex5.z).color(0, 0, 0, 0).next();
+//        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 0, 0, 0).next();
+//    }
+//
+//    private void look(MatrixStack matrixStack, OrientedBoundingBox box, BufferBuilder buffer, float alpha) {
+//        Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
+//        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 0, 0, alpha).next();
+//
+//        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(1, 0, 0, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.axisZ.x, (float) box.axisZ.y, (float) box.axisZ.z).color(1, 0, 0, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(1, 0, 0, alpha).next();
+//
+//        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 1, 0, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.axisY.x, (float) box.axisY.y, (float) box.axisY.z).color(0, 1, 0, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 1, 0, alpha).next();
+//
+//        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 0, 1, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.axisX.x, (float) box.axisX.y, (float) box.axisX.z).color(0, 0, 1, alpha).next();
+//        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 0, 1, alpha).next();
+//
+//        buffer.vertex(matrix4f, (float) box.center.x, (float) box.center.y, (float) box.center.z).color(0, 0, 0, alpha).next();
+//    }
 
     public void printDebug(OrientedBoundingBox obb) {
         Vec3d extent_x = obb.axisX.multiply(obb.extent.x);

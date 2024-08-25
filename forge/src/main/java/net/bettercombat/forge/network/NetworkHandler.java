@@ -9,7 +9,7 @@ public class NetworkHandler {
     public static SimpleChannel INSTANCE;
 
     public static void registerMessages(){
-        INSTANCE = ChannelBuilder.named(new Identifier(BetterCombat.MODID, "network"))
+        INSTANCE = ChannelBuilder.named(Identifier.of(BetterCombat.MODID, "network"))
                 .networkProtocolVersion(1)
                 .acceptedVersions((s, v) -> true)
                 .simpleChannel();

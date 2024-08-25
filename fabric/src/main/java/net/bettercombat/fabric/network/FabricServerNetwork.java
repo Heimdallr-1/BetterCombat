@@ -4,10 +4,7 @@ import net.bettercombat.BetterCombatMod;
 import net.bettercombat.logic.WeaponRegistry;
 import net.bettercombat.network.Packets;
 import net.bettercombat.network.ServerNetwork;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.*;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerConfigurationTask;
 import net.minecraft.text.Text;
@@ -41,27 +38,27 @@ public class FabricServerNetwork {
             }
         });
 
-        ServerConfigurationNetworking.registerGlobalReceiver(Packets.Ack.ID, (server, handler, buf, responseSender) -> {
-            var packet = Packets.Ack.read(buf);
+        PayloadTypeRegistry.configurationC2S().register(Packets.Ack.PACKET_ID, Packets.Ack.CODEC);
+        ServerConfigurationNetworking.registerGlobalReceiver(Packets.Ack.PACKET_ID, (packet, context) -> {
             // Warning: if you do not call completeTask, the client gets stuck!
             if (packet.code().equals(ConfigurationTask.name)) {
-                handler.completeTask(ConfigurationTask.KEY);
+                context.networkHandler().completeTask(ConfigurationTask.KEY);
             }
             if (packet.code().equals(WeaponRegistrySyncTask.name)) {
-                handler.completeTask(WeaponRegistrySyncTask.KEY);
+                context.networkHandler().completeTask(WeaponRegistrySyncTask.KEY);
             }
         });
 
         // Play stage
 
-        ServerPlayNetworking.registerGlobalReceiver(Packets.AttackAnimation.ID, (server, player, handler, buf, responseSender) -> {
-            var packet = Packets.AttackAnimation.read(buf);
-            ServerNetwork.handleAttackAnimation(packet, server, player);
+        PayloadTypeRegistry.playC2S().register(Packets.AttackAnimation.PACKET_ID, Packets.AttackAnimation.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(Packets.AttackAnimation.PACKET_ID, (packet, context) -> {
+            ServerNetwork.handleAttackAnimation(packet, context.server(), context.player());
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(Packets.C2S_AttackRequest.ID, (server, player, handler, buf, responseSender) -> {
-            var packet = Packets.C2S_AttackRequest.read(buf);
-            ServerNetwork.handleAttackRequest(packet, server, player, handler);
+        PayloadTypeRegistry.playC2S().register(Packets.C2S_AttackRequest.PACKET_ID, Packets.C2S_AttackRequest.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(Packets.C2S_AttackRequest.PACKET_ID, (packet, context) -> {
+            ServerNetwork.handleAttackRequest(packet, context.server(), context.player(), context.player().networkHandler);
         });
     }
 
@@ -76,9 +73,8 @@ public class FabricServerNetwork {
 
         @Override
         public void sendPacket(Consumer<Packet<?>> sender) {
-            var buffer = PacketByteBufs.create();
-            new Packets.ConfigSync(this.configString).write(buffer);
-            sender.accept(ServerConfigurationNetworking.createS2CPacket(Packets.ConfigSync.ID, buffer));
+            var packet = new Packets.ConfigSync(this.configString);
+            sender.accept(ServerConfigurationNetworking.createS2CPacket(packet));
         }
     }
 
@@ -93,9 +89,8 @@ public class FabricServerNetwork {
 
         @Override
         public void sendPacket(Consumer<Packet<?>> sender) {
-            var buffer = PacketByteBufs.create();
-            new Packets.WeaponRegistrySync(encodedRegistry).write(buffer);
-            sender.accept(ServerConfigurationNetworking.createS2CPacket(Packets.WeaponRegistrySync.ID, buffer));
+            var packet = new Packets.WeaponRegistrySync(encodedRegistry);
+            sender.accept(ServerConfigurationNetworking.createS2CPacket(packet));
         }
     }
 }

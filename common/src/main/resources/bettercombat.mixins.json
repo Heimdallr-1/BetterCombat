@@ -11,8 +11,7 @@
     "PlayerEntityAccessor",
     "PlayerEntityMixin",
     "RangedWeaponItemMixin",
-    "ServerPlayNetworkHandlerMixin",
-    "SweepingEnchantmentMixin"
+    "ServerPlayNetworkHandlerMixin"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",

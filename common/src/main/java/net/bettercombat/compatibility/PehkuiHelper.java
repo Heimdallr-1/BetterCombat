@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class PehkuiHelper {
-    public static Identifier scaleId = new Identifier("pehkui", "entity_reach");
+    public static Identifier scaleId = Identifier.of("pehkui", "entity_reach");
     private static final Method GET_SCALE_DATA;
     private static final Method GET_SCALE;
     private static final Map<Identifier, Object> SCALE_TYPES;

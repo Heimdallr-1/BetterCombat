@@ -166,20 +166,20 @@ public class PlayerAttackHelper {
     public static void setAttributesForOffHandAttack(PlayerEntity player, boolean useOffHand) {
         var mainHandStack = player.getMainHandStack();
         var offHandStack = player.getOffHandStack();
-        ItemStack add;
-        ItemStack remove;
-        if (useOffHand) {
-            remove = mainHandStack;
-            add = offHandStack;
-        } else {
-            remove = offHandStack;
-            add = mainHandStack;
-        }
-        if (remove != null) {
-            player.getAttributes().removeModifiers(remove.getAttributeModifiers(MAINHAND));
-        }
-        if (add != null) {
-            player.getAttributes().addTemporaryModifiers(add.getAttributeModifiers(MAINHAND));
-        }
+//        ItemStack add;
+//        ItemStack remove;
+//        if (useOffHand) {
+//            remove = mainHandStack;
+//            add = offHandStack;
+//        } else {
+//            remove = offHandStack;
+//            add = mainHandStack;
+//        }
+//        if (remove != null) {
+//            player.getAttributes().removeModifiers(remove.getAttributeModifiers(MAINHAND));
+//        }
+//        if (add != null) {
+//            player.getAttributes().addTemporaryModifiers(add.getAttributeModifiers(MAINHAND));
+//        }
     }
 }

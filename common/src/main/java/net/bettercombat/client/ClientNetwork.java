@@ -46,7 +46,7 @@ public class ClientNetwork {
                     return;
                 }
 
-                var soundEvent = Registries.SOUND_EVENT.get(new Identifier(packet.soundId()));
+                var soundEvent = Registries.SOUND_EVENT.get(Identifier.of(packet.soundId()));
                 var configVolume = BetterCombatClientMod.config.weaponSwingSoundVolume;
                 var volume = packet.volume() * ((float) Math.min(Math.max(configVolume, 0), 100) / 100F);
                 client.world.playSound(

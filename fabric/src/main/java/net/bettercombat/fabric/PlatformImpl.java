@@ -49,14 +49,10 @@ public class PlatformImpl {
     }
 
     public static void networkS2C_Send(ServerPlayerEntity player, CustomPayload payload) {
-        var buffer = PacketByteBufs.create();
-        payload.write(buffer);
-        ServerPlayNetworking.send(player, payload.id(), buffer);
+        ServerPlayNetworking.send(player, payload);
     }
 
     public static void networkC2S_Send(CustomPayload payload) {
-        var buffer = PacketByteBufs.create();
-        payload.write(buffer);
-        ClientPlayNetworking.send(payload.id(), buffer);
+        ClientPlayNetworking.send(payload);
     }
 }

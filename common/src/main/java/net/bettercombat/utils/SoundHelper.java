@@ -36,7 +36,7 @@ public class SoundHelper {
                     pitch,
                     rng.nextLong());
 
-            var soundEvent = Registries.SOUND_EVENT.get(new Identifier(sound.id()));
+            var soundEvent = Registries.SOUND_EVENT.get(Identifier.of(sound.id()));
             var distance = soundEvent.getDistanceToTravel(sound.volume());
             var origin = new Vec3d(entity.getX(), entity.getY(), entity.getZ());
             Platform.around(world, origin, distance).forEach(serverPlayer -> {
@@ -86,7 +86,7 @@ public class SoundHelper {
 
     public static void registerSounds() {
         for (var soundKey: soundKeys) {
-            var soundId = new Identifier(BetterCombatMod.ID, soundKey);
+            var soundId = Identifier.of(BetterCombatMod.ID, soundKey);
             var soundEvent = SoundEvent.of(soundId);
             Registry.register(Registries.SOUND_EVENT, soundId, soundEvent);
         }

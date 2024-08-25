@@ -27,7 +27,7 @@ public class NeoForgeClientMod {
         BetterCombatClientMod.init();
         BetterCombatClientMod.loadAnimation();
 
-        ModelPredicateProviderRegistry.registerGeneric(new Identifier(BetterCombatMod.ID, "loaded"), (stack, world, entity, seed) -> {
+        ModelPredicateProviderRegistry.registerGeneric(Identifier.of(BetterCombatMod.ID, "loaded"), (stack, world, entity, seed) -> {
             return 1.0F;
         });
 

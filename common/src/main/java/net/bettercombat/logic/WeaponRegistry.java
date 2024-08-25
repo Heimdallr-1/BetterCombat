@@ -41,12 +41,12 @@ public class WeaponRegistry {
         if (itemStack == null) {
             return null;
         }
-        if (itemStack.hasNbt()) {
-            var attributes = WeaponAttributesHelper.readFromNBT(itemStack);
-            if (attributes != null) {
-                return attributes;
-            }
-        }
+//        if (itemStack.hasNbt()) {
+//            var attributes = WeaponAttributesHelper.readFromNBT(itemStack);
+//            if (attributes != null) {
+//                return attributes;
+//            }
+//        }
         Item item = itemStack.getItem();
         Identifier id = Registries.ITEM.getId(item);
         WeaponAttributes attributes = WeaponRegistry.getAttributes(id);
@@ -81,7 +81,7 @@ public class WeaponRegistry {
                 var id = identifier
                         .toString().replace("weapon_attributes/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
-                containers.put(new Identifier(id), container);
+                containers.put(Identifier.of(id), container);
             } catch (Exception e) {
                 System.err.println("Failed to parse: " + identifier);
                 e.printStackTrace();
@@ -97,7 +97,7 @@ public class WeaponRegistry {
             while (current != null) {
                 resolutionChain.add(0, current.attributes());
                 if (current.parent() != null) {
-                    current = containers.get(new Identifier(current.parent()));
+                    current = containers.get(Identifier.of(current.parent()));
                 } else {
                     current = null;
                 }
@@ -168,7 +168,7 @@ public class WeaponRegistry {
         Map<String, WeaponAttributes> readRegistrations = gson.fromJson(json, mapType);
         Map<Identifier, WeaponAttributes> newRegistrations = new HashMap();
         readRegistrations.forEach((key, value) -> {
-            newRegistrations.put(new Identifier(key), value);
+            newRegistrations.put(Identifier.of(key), value);
         });
         registrations = newRegistrations;
     }

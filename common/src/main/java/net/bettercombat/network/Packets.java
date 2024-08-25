@@ -6,6 +6,8 @@ import net.bettercombat.config.ServerConfig;
 import net.bettercombat.logic.AnimatedHand;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
@@ -14,6 +16,10 @@ import java.util.List;
 
 public class Packets {
     public record C2S_AttackRequest(int comboCount, boolean isSneaking, int selectedSlot, int[] entityIds) implements CustomPayload {
+        public static Identifier ID = Identifier.of(BetterCombatMod.ID, "c2s_request_attack");
+        public static final CustomPayload.Id<C2S_AttackRequest> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, C2S_AttackRequest> CODEC = PacketCodec.of(C2S_AttackRequest::write, C2S_AttackRequest::read);
+
         public C2S_AttackRequest(int comboCount, boolean isSneaking, int selectedSlot, List<Entity> entities) {
             this(comboCount, isSneaking, selectedSlot, convertEntityList(entities));
         }
@@ -26,7 +32,6 @@ public class Packets {
             return ids;
         }
 
-        public static Identifier ID = new Identifier(BetterCombatMod.ID, "c2s_request_attack");
         public static boolean UseVanillaPacket = true;
         public void write(PacketByteBuf buffer) {
             buffer.writeInt(comboCount);
@@ -44,13 +49,16 @@ public class Packets {
         }
 
         @Override
-        public Identifier id() {
-            return ID;
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
         }
     }
 
     public record AttackAnimation(int playerId, AnimatedHand animatedHand, String animationName, float length, float upswing) implements CustomPayload {
-        public static Identifier ID = new Identifier(BetterCombatMod.ID, "attack_animation");
+        public static Identifier ID = Identifier.of(BetterCombatMod.ID, "attack_animation");
+        public static final CustomPayload.Id<AttackAnimation> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, AttackAnimation> CODEC = PacketCodec.of(AttackAnimation::write, AttackAnimation::read);
+
         public static String StopSymbol = "!STOP!";
         public static AttackAnimation stop(int playerId, int length) { return new AttackAnimation(playerId, AnimatedHand.MAIN_HAND, StopSymbol, length, 0); }
 
@@ -72,13 +80,16 @@ public class Packets {
         }
 
         @Override
-        public Identifier id() {
-            return ID;
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
         }
     }
 
     public record AttackSound(double x, double y, double z, String soundId, float volume, float pitch, long seed) implements CustomPayload {
-        public static Identifier ID = new Identifier(BetterCombatMod.ID, "attack_sound");
+        public static Identifier ID = Identifier.of(BetterCombatMod.ID, "attack_sound");
+        public static final CustomPayload.Id<AttackSound> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, AttackSound> CODEC = PacketCodec.of(AttackSound::write, AttackSound::read);
+
         public void write(PacketByteBuf buffer) {
             buffer.writeDouble(x);
             buffer.writeDouble(y);
@@ -101,13 +112,15 @@ public class Packets {
         }
 
         @Override
-        public Identifier id() {
-            return ID;
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
         }
     }
 
     public record WeaponRegistrySync(List<String> chunks) implements CustomPayload {
-        public static Identifier ID = new Identifier(BetterCombatMod.ID, "weapon_registry");
+        public static Identifier ID = Identifier.of(BetterCombatMod.ID, "weapon_registry");
+        public static final CustomPayload.Id<WeaponRegistrySync> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<PacketByteBuf, WeaponRegistrySync> CODEC = PacketCodec.of(WeaponRegistrySync::write, WeaponRegistrySync::read);
 
         public void write(PacketByteBuf buffer) {
             buffer.writeInt(chunks.size());
@@ -126,13 +139,15 @@ public class Packets {
         }
 
         @Override
-        public Identifier id() {
-            return ID;
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
         }
     }
 
     public record ConfigSync(String json) implements CustomPayload {
-        public static Identifier ID = new Identifier(BetterCombatMod.ID, "config_sync");
+        public static Identifier ID = Identifier.of(BetterCombatMod.ID, "config_sync");
+        public static final CustomPayload.Id<ConfigSync> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<PacketByteBuf, ConfigSync> CODEC = PacketCodec.of(ConfigSync::write, ConfigSync::read);
 
         private static final Gson gson = new Gson();
         public static String serialize(ServerConfig config) {
@@ -153,15 +168,16 @@ public class Packets {
         }
 
         @Override
-        public Identifier id() {
-            return ID;
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
         }
     }
 
     public record Ack(String code) implements CustomPayload {
-        public static Identifier ID = new Identifier(BetterCombatMod.ID, "ack");
+        public static Identifier ID = Identifier.of(BetterCombatMod.ID, "ack");
+        public static final CustomPayload.Id<Ack> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<PacketByteBuf, Ack> CODEC = PacketCodec.of(Ack::write, Ack::read);
 
-        @Override
         public void write(PacketByteBuf buffer) {
             buffer.writeString(code);
         }
@@ -172,8 +188,8 @@ public class Packets {
         }
 
         @Override
-        public Identifier id() {
-            return ID;
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
         }
     }
 }

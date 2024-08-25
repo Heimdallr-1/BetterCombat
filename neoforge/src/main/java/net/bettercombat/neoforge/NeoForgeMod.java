@@ -20,6 +20,6 @@ public final class NeoForgeMod {
             DeferredRegister.create(Registries.SOUND_EVENT, BetterCombatMod.ID);
 
     static {
-        SoundHelper.soundKeys.forEach(soundKey -> SOUND_EVENTS.register(soundKey, () -> SoundEvent.of(new Identifier(BetterCombatMod.ID, soundKey))));
+        SoundHelper.soundKeys.forEach(soundKey -> SOUND_EVENTS.register(soundKey, () -> SoundEvent.of(Identifier.of(BetterCombatMod.ID, soundKey))));
     }
 }
