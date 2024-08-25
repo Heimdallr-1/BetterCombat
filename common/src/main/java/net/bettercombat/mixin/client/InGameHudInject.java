@@ -6,6 +6,7 @@ import net.bettercombat.client.BetterCombatClientMod;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
+import net.minecraft.client.render.RenderTickCounter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,17 +15,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InGameHud.class)
 public abstract class InGameHudInject {
-//    @Inject(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIII)V"))
-//    private void pre_renderCrosshair(DrawContext context, CallbackInfo ci) {
-//        if (BetterCombatClientMod.config.isHighlightCrosshairEnabled) {
-//            setShaderForHighlighting();
-//        }
-//    }
-//
-//    @Inject(method = "renderCrosshair", at = @At(value = "TAIL"))
-//    private void post_renderCrosshair(DrawContext context, CallbackInfo ci) {
-//        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-//    }
+    @Inject(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIII)V"))
+    private void pre_renderCrosshair(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+        if (BetterCombatClientMod.config.isHighlightCrosshairEnabled) {
+            setShaderForHighlighting();
+        }
+    }
+
+    @Inject(method = "renderCrosshair", at = @At(value = "TAIL"))
+    private void post_renderCrosshair(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
 
     @Unique
     private void setShaderForHighlighting() {
