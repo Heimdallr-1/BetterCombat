@@ -44,6 +44,7 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
         if (((PlayerEntity)instance).getWorld().isClient()) {
             ((PlayerAttackAnimatable) this).updateAnimationsOnTick();
         }
+        updateDualWieldingSpeedBoost();
     }
 
     // FEATURE: Disable sweeping for attributed weapons
@@ -113,38 +114,38 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
 
     // FEATURE: Dual wielding
 
-    private Multimap<EntityAttribute, RegistryEntry<EntityAttribute>> dualWieldingAttributeMap;
+    private Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> dualWieldingAttributeMap;
     private static final Identifier dualWieldingSpeedModifierId = Identifier.of(BetterCombatMod.ID, "dual_wield");
 
 
     // FIXME: Replace with high level multiplied Mixin, WrapOperation player.getAttributes(...)
-//    private void updateDualWieldingSpeedBoost() {
-//        var player = ((PlayerEntity) ((Object)this));
-//        var newState = PlayerAttackHelper.isDualWielding(player);
-//        var currentState = dualWieldingAttributeMap != null;
-//        if (newState != currentState) {
-//            if(newState) {
-//                // Just started dual wielding
-//                // Adding speed boost modifier
-//                this.dualWieldingAttributeMap = HashMultimap.create();
-//                double multiplier = BetterCombatMod.config.dual_wielding_attack_speed_multiplier - 1;
-//                dualWieldingAttributeMap.put(
-//                        EntityAttributes.GENERIC_ATTACK_SPEED,
-//                        new EntityAttributeModifier(
-//                                dualWieldingSpeedModifierId,
-//                                multiplier,
-//                                EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE));
-//                player.getAttributes().addTemporaryModifiers(dualWieldingAttributeMap);
-//            } else {
-//                // Just stopped dual wielding
-//                // Removing speed boost modifier
-//                if (dualWieldingAttributeMap != null) { // Safety first... Who knows...
-//                    player.getAttributes().removeModifiers(dualWieldingAttributeMap);
-//                    dualWieldingAttributeMap = null;
-//                }
-//            }
-//        }
-//    }
+    private void updateDualWieldingSpeedBoost() {
+        var player = ((PlayerEntity) ((Object)this));
+        var newState = PlayerAttackHelper.isDualWielding(player);
+        var currentState = dualWieldingAttributeMap != null;
+        if (newState != currentState) {
+            if(newState) {
+                // Just started dual wielding
+                // Adding speed boost modifier
+                this.dualWieldingAttributeMap = HashMultimap.create();
+                double multiplier = BetterCombatMod.config.dual_wielding_attack_speed_multiplier - 1;
+                dualWieldingAttributeMap.put(
+                        EntityAttributes.GENERIC_ATTACK_SPEED,
+                        new EntityAttributeModifier(
+                                dualWieldingSpeedModifierId,
+                                multiplier,
+                                EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+                player.getAttributes().addTemporaryModifiers(dualWieldingAttributeMap);
+            } else {
+                // Just stopped dual wielding
+                // Removing speed boost modifier
+                if (dualWieldingAttributeMap != null) { // Safety first... Who knows...
+                    player.getAttributes().removeModifiers(dualWieldingAttributeMap);
+                    dualWieldingAttributeMap = null;
+                }
+            }
+        }
+    }
 
     @ModifyArg(method = "attack", at = @At(
             value = "INVOKE",
