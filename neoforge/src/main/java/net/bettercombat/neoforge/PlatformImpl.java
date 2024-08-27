@@ -44,10 +44,10 @@ public class PlatformImpl {
     }
 
     public static void networkS2C_Send(ServerPlayerEntity player, CustomPayload payload) {
-        PacketDistributor.PLAYER.with(player).send(payload);
+        PacketDistributor.sendToPlayer(player, payload);
     }
 
     public static void networkC2S_Send(CustomPayload payload) {
-        PacketDistributor.SERVER.with(null).send(payload);
+        PacketDistributor.sendToServer(payload);
     }
 }
