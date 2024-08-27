@@ -41,15 +41,13 @@ public class WeaponRegistry {
         if (itemStack == null) {
             return null;
         }
-//        if (itemStack.hasNbt()) {
-//            var attributes = WeaponAttributesHelper.readFromNBT(itemStack);
-//            if (attributes != null) {
-//                return attributes;
-//            }
-//        }
+        var attributes = WeaponAttributesHelper.readFromNBT(itemStack);
+        if (attributes != null) {
+            return attributes;
+        }
         Item item = itemStack.getItem();
         Identifier id = Registries.ITEM.getId(item);
-        WeaponAttributes attributes = WeaponRegistry.getAttributes(id);
+        attributes = WeaponRegistry.getAttributes(id);
         return attributes;
     }
 

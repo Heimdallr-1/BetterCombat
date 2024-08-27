@@ -2,7 +2,6 @@ package net.bettercombat.client;
 
 import net.bettercombat.logic.WeaponRegistry;
 import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenTexts;
