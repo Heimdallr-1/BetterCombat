@@ -7,6 +7,7 @@ import net.bettercombat.BetterCombatMod;
 import net.bettercombat.api.AttackHand;
 import net.bettercombat.api.ComboState;
 import net.bettercombat.api.WeaponAttributes;
+import net.bettercombat.utils.AttributeModifierHelper;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -185,21 +186,12 @@ public class PlayerAttackHelper {
             add = mainHandStack;
         }
         if (remove != null) {
-            var modifiersMap = modifierMultimap(remove);
+            var modifiersMap = AttributeModifierHelper.modifierMultimap(remove);
             player.getAttributes().removeModifiers(modifiersMap);
         }
         if (add != null) {
-            var modifiersMap = modifierMultimap(add);
+            var modifiersMap = AttributeModifierHelper.modifierMultimap(add);
             player.getAttributes().addTemporaryModifiers(modifiersMap);
         }
-    }
-
-    private static @NotNull Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> modifierMultimap(ItemStack itemStack) {
-        var modifiers = itemStack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
-        Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> modifiersMap = HashMultimap.create();
-        for (var entry : modifiers.modifiers()) {
-            modifiersMap.put(entry.attribute(), entry.modifier());
-        }
-        return modifiersMap;
     }
 }

@@ -11,6 +11,7 @@ import net.bettercombat.logic.PlayerAttackProperties;
 import net.bettercombat.logic.TargetHelper;
 import net.bettercombat.logic.knockback.ConfigurableKnockback;
 import net.bettercombat.mixin.LivingEntityAccessor;
+import net.bettercombat.utils.AttributeModifierHelper;
 import net.bettercombat.utils.MathHelper;
 import net.bettercombat.utils.SoundHelper;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -26,12 +27,14 @@ import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.SwordItem;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
 import java.util.UUID;
@@ -69,6 +72,8 @@ public class ServerNetwork {
         });
     }
 
+    public static Identifier TEMPORARY_ATTACK = Identifier.of(BetterCombatMod.ID, "temp_attack");
+
     public static void handleAttackRequest(Packets.C2S_AttackRequest request, MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler) {
         ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
                 .orNull();
@@ -92,18 +97,22 @@ public class ServerNetwork {
 //            Multimap<EntityAttribute, EntityAttributeModifier> comboAttributes = null;
 //            Multimap<EntityAttribute, EntityAttributeModifier> dualWieldingAttributes = null;
 //            Multimap<EntityAttribute, EntityAttributeModifier> sweepingModifiers = HashMultimap.create();
+
+            double damageBaseMultiplier = 0.0;
             double range = 18.0;
             if (attributes != null && attack != null) {
                 range = attributes.attackRange();
 
 //                comboAttributes = HashMultimap.create();
-//                double comboMultiplier = attack.damageMultiplier() - 1;
+                double comboMultiplier = attack.damageMultiplier() - 1;
+                damageBaseMultiplier += comboMultiplier;
 //                comboAttributes.put(
 //                        EntityAttributes.GENERIC_ATTACK_DAMAGE,
 //                        new EntityAttributeModifier(COMBO_DAMAGE_MODIFIER_ID, "COMBO_DAMAGE_MULTIPLIER", comboMultiplier, EntityAttributeModifier.Operation.MULTIPLY_BASE));
 //                player.getAttributes().addTemporaryModifiers(comboAttributes);
 
-//                var dualWieldingMultiplier = PlayerAttackHelper.getDualWieldingAttackDamageMultiplier(player, hand) - 1;
+                var dualWieldingMultiplier = PlayerAttackHelper.getDualWieldingAttackDamageMultiplier(player, hand) - 1;
+                damageBaseMultiplier += dualWieldingMultiplier;
 //                if (dualWieldingMultiplier != 0) {
 //                    dualWieldingAttributes = HashMultimap.create();
 //                    dualWieldingAttributes.put(
@@ -118,7 +127,7 @@ public class ServerNetwork {
 
                 SoundHelper.playSound(world, player, attack.swingSound());
 
-//                if (BetterCombatMod.config.allow_reworked_sweeping && request.entityIds().length > 1) {
+                if (BetterCombatMod.config.allow_reworked_sweeping && request.entityIds().length > 1) {
 //                    double multiplier = 1.0
 //                            - (BetterCombatMod.config.reworked_sweeping_maximum_damage_penalty / BetterCombatMod.config.reworked_sweeping_extra_target_count)
 //                            * Math.min(BetterCombatMod.config.reworked_sweeping_extra_target_count, request.entityIds().length - 1);
@@ -140,7 +149,16 @@ public class ServerNetwork {
 //                    if (BetterCombatMod.config.reworked_sweeping_emits_particles && playEffects) {
 //                        player.spawnSweepAttackParticles();
 //                    }
-//                }
+                }
+            }
+
+            Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> damageModifier = null;
+            if (damageBaseMultiplier != 0) {
+                AttributeModifierHelper.fromModifier(EntityAttributes.GENERIC_ATTACK_DAMAGE, null);
+                damageModifier = AttributeModifierHelper.fromModifier(
+                        EntityAttributes.GENERIC_ATTACK_DAMAGE,
+                        new EntityAttributeModifier(TEMPORARY_ATTACK, damageBaseMultiplier, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+                player.getAttributes().addTemporaryModifiers(damageModifier);
             }
 
             var attackCooldown = PlayerAttackHelper.getAttackCooldownTicksCapped(player);
@@ -205,12 +223,16 @@ public class ServerNetwork {
                 player.updateLastActionTime();
             }
 
-//            if (comboAttributes != null) {
-//                player.getAttributes().removeModifiers(comboAttributes);
-//                if (hand.isOffHand()) {
-//                    PlayerAttackHelper.setAttributesForOffHandAttack(player, false);
-//                }
-//            }
+
+
+            if (damageModifier != null) {
+                player.getAttributes().removeModifiers(damageModifier);
+            }
+
+            if (hand.isOffHand()) {
+                PlayerAttackHelper.setAttributesForOffHandAttack(player, false);
+            }
+
 //            if (dualWieldingAttributes != null) {
 //                player.getAttributes().removeModifiers(dualWieldingAttributes);
 //            }
