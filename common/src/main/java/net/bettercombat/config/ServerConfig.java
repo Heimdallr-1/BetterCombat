@@ -43,12 +43,6 @@ public class ServerConfig implements ConfigData {
             - `0.5` -50% damage
             """)
     public float reworked_sweeping_maximum_damage_penalty = 0.5F;
-    @Comment("""
-            The maximum level Sweeping Edge enchantment applied to the attackers weapon will restore this amount of penalty.
-            Example values:
-            - `0.5` restores 50% damage penalty when 3 levels are applied, so 16.66% when 1 level is applied
-            """)
-    public float reworked_sweeping_enchant_restores = 0.5F;
     public boolean reworked_sweeping_plays_sound = true;
     public boolean reworked_sweeping_emits_particles = true;
     public boolean reworked_sweeping_sound_and_particles_only_for_swords = true;

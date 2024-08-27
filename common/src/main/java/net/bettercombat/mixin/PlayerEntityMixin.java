@@ -64,27 +64,6 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
         return value;
     }
 
-//    @Redirect(method = "attack(Lnet/minecraft/entity/Entity;)V",
-//            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;playSound(Lnet/minecraft/entity/player/PlayerEntity;DDDLnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FF)V"))
-//    public void playSweep(World instance, PlayerEntity entity, double x, double y, double z, SoundEvent soundEvent, SoundCategory soundCategory, float volume, float pitch) {
-//        // Get an instance of player entity because player is always null here
-//        PlayerEntity playerEntity = (PlayerEntity) ((Object)this);
-//        // Create a list with sword sweep sounds
-//        List<Identifier> swordSweepSounds = new ArrayList<>();
-//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP.getId());
-//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_WEAK.getId());
-//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_STRONG.getId());
-//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_CRIT.getId());
-//        // If the player has on the main hand a sword and the event for the sound is any of the attack sounds
-//        if (playerEntity.getMainHandStack().getItem() instanceof SwordItem && swordSweepSounds.contains(soundEvent.getId())) {
-//            // Play an anvil landing sound
-//            instance.playSound(null, x, y, z, SoundEvents.BLOCK_ANVIL_LAND, soundCategory, volume, pitch);
-//        } else {
-//            // Otherwise play the sound that the game chose by default
-//            instance.playSound(null, x, y, z, soundEvent, soundCategory, volume, pitch);
-//        }
-//    }
-
     // FEATURE: Two-handed wielding
 
     @Inject(method = "getEquippedStack", at = @At("HEAD"), cancellable = true)

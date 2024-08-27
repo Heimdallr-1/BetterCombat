@@ -1,6 +1,5 @@
 package net.bettercombat.network;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
@@ -14,8 +13,6 @@ import net.bettercombat.mixin.LivingEntityAccessor;
 import net.bettercombat.utils.AttributeModifierHelper;
 import net.bettercombat.utils.MathHelper;
 import net.bettercombat.utils.SoundHelper;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.ItemEntity;
@@ -94,32 +91,17 @@ public class ServerNetwork {
         final boolean useVanillaPacket = Packets.C2S_AttackRequest.UseVanillaPacket;
         world.getServer().executeSync(() -> {
             ((PlayerAttackProperties)player).setComboCount(request.comboCount());
-//            Multimap<EntityAttribute, EntityAttributeModifier> comboAttributes = null;
-//            Multimap<EntityAttribute, EntityAttributeModifier> dualWieldingAttributes = null;
-//            Multimap<EntityAttribute, EntityAttributeModifier> sweepingModifiers = HashMultimap.create();
 
             double damageBaseMultiplier = 0.0;
             double range = 18.0;
             if (attributes != null && attack != null) {
                 range = attributes.attackRange();
 
-//                comboAttributes = HashMultimap.create();
                 double comboMultiplier = attack.damageMultiplier() - 1;
                 damageBaseMultiplier += comboMultiplier;
-//                comboAttributes.put(
-//                        EntityAttributes.GENERIC_ATTACK_DAMAGE,
-//                        new EntityAttributeModifier(COMBO_DAMAGE_MODIFIER_ID, "COMBO_DAMAGE_MULTIPLIER", comboMultiplier, EntityAttributeModifier.Operation.MULTIPLY_BASE));
-//                player.getAttributes().addTemporaryModifiers(comboAttributes);
 
                 var dualWieldingMultiplier = PlayerAttackHelper.getDualWieldingAttackDamageMultiplier(player, hand) - 1;
                 damageBaseMultiplier += dualWieldingMultiplier;
-//                if (dualWieldingMultiplier != 0) {
-//                    dualWieldingAttributes = HashMultimap.create();
-//                    dualWieldingAttributes.put(
-//                            EntityAttributes.GENERIC_ATTACK_DAMAGE,
-//                            new EntityAttributeModifier(DUAL_WIELDING_MODIFIER_ID, "DUAL_WIELDING_DAMAGE_MULTIPLIER", dualWieldingMultiplier, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
-//                    player.getAttributes().addTemporaryModifiers(dualWieldingAttributes);
-//                }
 
                 if (hand.isOffHand()) {
                     PlayerAttackHelper.setAttributesForOffHandAttack(player, true);
@@ -128,27 +110,21 @@ public class ServerNetwork {
                 SoundHelper.playSound(world, player, attack.swingSound());
 
                 if (BetterCombatMod.config.allow_reworked_sweeping && request.entityIds().length > 1) {
-//                    double multiplier = 1.0
-//                            - (BetterCombatMod.config.reworked_sweeping_maximum_damage_penalty / BetterCombatMod.config.reworked_sweeping_extra_target_count)
-//                            * Math.min(BetterCombatMod.config.reworked_sweeping_extra_target_count, request.entityIds().length - 1);
-//                    int sweepingLevel = EnchantmentHelper.getLevel(Enchantments.SWEEPING, hand.itemStack());
-//                    double sweepingSteps = BetterCombatMod.config.reworked_sweeping_enchant_restores / ((double)Enchantments.SWEEPING.getMaxLevel());
-//                    multiplier += sweepingLevel * sweepingSteps;
-//                    multiplier = Math.min(multiplier, 1);
-//                    sweepingModifiers.put(
-//                            EntityAttributes.GENERIC_ATTACK_DAMAGE,
-//                            new EntityAttributeModifier(SWEEPING_MODIFIER_ID, "SWEEPING_DAMAGE_MODIFIER", multiplier - 1, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
-//                    // System.out.println("Applied sweeping multiplier " + multiplier + " , sweepingSteps " + sweepingSteps + " , enchant bonus: " + (sweepingLevel * sweepingSteps));
-//                    player.getAttributes().addTemporaryModifiers(sweepingModifiers);
-//
-//                    boolean playEffects = !BetterCombatMod.config.reworked_sweeping_sound_and_particles_only_for_swords
-//                            || (hand.itemStack().getItem() instanceof SwordItem);
-//                    if (BetterCombatMod.config.reworked_sweeping_plays_sound && playEffects) {
-//                        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0f, 1.0f);
-//                    }
-//                    if (BetterCombatMod.config.reworked_sweeping_emits_particles && playEffects) {
-//                        player.spawnSweepAttackParticles();
-//                    }
+                    double multiplier = 0
+                            - (BetterCombatMod.config.reworked_sweeping_maximum_damage_penalty / BetterCombatMod.config.reworked_sweeping_extra_target_count)
+                            * Math.min(BetterCombatMod.config.reworked_sweeping_extra_target_count, request.entityIds().length - 1);
+                    var sweepRatio = player.getAttributeValue(EntityAttributes.PLAYER_SWEEPING_DAMAGE_RATIO);
+
+                    damageBaseMultiplier += multiplier + (BetterCombatMod.config.reworked_sweeping_maximum_damage_penalty * sweepRatio);
+
+                    boolean playEffects = !BetterCombatMod.config.reworked_sweeping_sound_and_particles_only_for_swords
+                            || (hand.itemStack().getItem() instanceof SwordItem);
+                    if (BetterCombatMod.config.reworked_sweeping_plays_sound && playEffects) {
+                        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0f, 1.0f);
+                    }
+                    if (BetterCombatMod.config.reworked_sweeping_emits_particles && playEffects) {
+                        player.spawnSweepAttackParticles();
+                    }
                 }
             }
 
@@ -233,12 +209,6 @@ public class ServerNetwork {
                 PlayerAttackHelper.setAttributesForOffHandAttack(player, false);
             }
 
-//            if (dualWieldingAttributes != null) {
-//                player.getAttributes().removeModifiers(dualWieldingAttributes);
-//            }
-//            if (!sweepingModifiers.isEmpty()) {
-//                player.getAttributes().removeModifiers(sweepingModifiers);
-//            }
             ((PlayerAttackProperties)player).setComboCount(-1);
         });
     }
