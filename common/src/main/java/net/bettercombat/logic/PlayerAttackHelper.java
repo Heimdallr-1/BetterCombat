@@ -1,12 +1,21 @@
 package net.bettercombat.logic;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import net.bettercombat.BetterCombatMod;
 import net.bettercombat.api.AttackHand;
 import net.bettercombat.api.ComboState;
 import net.bettercombat.api.WeaponAttributes;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShieldItem;
+import net.minecraft.registry.entry.RegistryEntry;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
@@ -166,20 +175,31 @@ public class PlayerAttackHelper {
     public static void setAttributesForOffHandAttack(PlayerEntity player, boolean useOffHand) {
         var mainHandStack = player.getMainHandStack();
         var offHandStack = player.getOffHandStack();
-//        ItemStack add;
-//        ItemStack remove;
-//        if (useOffHand) {
-//            remove = mainHandStack;
-//            add = offHandStack;
-//        } else {
-//            remove = offHandStack;
-//            add = mainHandStack;
-//        }
-//        if (remove != null) {
-//            player.getAttributes().removeModifiers(remove.getAttributeModifiers(MAINHAND));
-//        }
-//        if (add != null) {
-//            player.getAttributes().addTemporaryModifiers(add.getAttributeModifiers(MAINHAND));
-//        }
+        ItemStack add;
+        ItemStack remove;
+        if (useOffHand) {
+            remove = mainHandStack;
+            add = offHandStack;
+        } else {
+            remove = offHandStack;
+            add = mainHandStack;
+        }
+        if (remove != null) {
+            var modifiersMap = modifierMultimap(remove);
+            player.getAttributes().removeModifiers(modifiersMap);
+        }
+        if (add != null) {
+            var modifiersMap = modifierMultimap(add);
+            player.getAttributes().addTemporaryModifiers(modifiersMap);
+        }
+    }
+
+    private static @NotNull Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> modifierMultimap(ItemStack itemStack) {
+        var modifiers = itemStack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+        Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> modifiersMap = HashMultimap.create();
+        for (var entry : modifiers.modifiers()) {
+            modifiersMap.put(entry.attribute(), entry.modifier());
+        }
+        return modifiersMap;
     }
 }
