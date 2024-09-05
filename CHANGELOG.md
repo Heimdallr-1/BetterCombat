@@ -3,6 +3,9 @@
 - Support for Minecraft 1.21.0
 - Add support for `generic.scale` attribute, to scale attack range
 
+API Changes:
+- BREAKING! Asset directory for animations have been renamed from `attack_animations` to `player_animations`
+
 # 1.9.0
 
 - Welcome NeoForge support, goodbye legacy Forge!

@@ -20,7 +20,7 @@ public class FabricServerNetwork {
             // This if block is required! Otherwise the client gets stuck in connection screen
             // if the client cannot handle the packet.
             if (ServerConfigurationNetworking.canSend(handler, Packets.ConfigSync.ID)) {
-                System.out.println("Starting ConfigurationTask");
+                // System.out.println("Starting ConfigurationTask");
                 handler.addTask(new ConfigurationTask(Packets.ConfigSync.serialize(BetterCombatMod.config)));
             } else {
                 handler.disconnect(Text.literal("Network configuration task not supported: " + ConfigurationTask.name));
@@ -31,7 +31,7 @@ public class FabricServerNetwork {
                 if (WeaponRegistry.getEncodedRegistry().chunks().isEmpty()) {
                     throw new AssertionError("Weapon registry is empty!");
                 }
-                System.out.println("Starting WeaponRegistrySyncTask, chunks: " + WeaponRegistry.getEncodedRegistry().chunks().size());
+                // System.out.println("Starting WeaponRegistrySyncTask, chunks: " + WeaponRegistry.getEncodedRegistry().chunks().size());
                 handler.addTask(new WeaponRegistrySyncTask(WeaponRegistry.getEncodedRegistry().chunks()));
             } else {
                 handler.disconnect(Text.literal("Network configuration task not supported: " + WeaponRegistrySyncTask.name));
