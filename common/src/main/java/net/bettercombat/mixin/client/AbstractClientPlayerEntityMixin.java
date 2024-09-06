@@ -11,10 +11,10 @@ import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.core.util.Ease;
 import dev.kosmx.playerAnim.core.util.Vec3f;
 import dev.kosmx.playerAnim.impl.IAnimatedPlayer;
+import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
 import net.bettercombat.BetterCombatMod;
 import net.bettercombat.Platform;
 import net.bettercombat.client.BetterCombatClientMod;
-import net.bettercombat.client.animation.AnimationRegistry;
 import net.bettercombat.client.animation.PlayerAttackAnimatable;
 import net.bettercombat.client.animation.*;
 import net.bettercombat.client.animation.modifier.HarshAdjustmentModifier;
@@ -29,6 +29,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.util.Arm;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -97,14 +98,14 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         KeyframeAnimation newMainHandPose = null;
         var mainHandAttributes = WeaponRegistry.getAttributes(mainHandStack);
         if (mainHandAttributes != null && mainHandAttributes.pose() != null) {             // Player is not using the item
-            newMainHandPose = AnimationRegistry.animations.get(mainHandAttributes.pose());
+            newMainHandPose = (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(Identifier.of(mainHandAttributes.pose()));
         }
 
         KeyframeAnimation newOffHandPose = null;
         if (PlayerAttackHelper.isDualWielding(player)) {
             var offHandAttributes = WeaponRegistry.getAttributes(player.getOffHandStack());
             if (offHandAttributes != null && offHandAttributes.offHandPose() != null) {
-                newOffHandPose = AnimationRegistry.animations.get(offHandAttributes.offHandPose());
+                newOffHandPose = (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(Identifier.of(mainHandAttributes.pose()));
             }
         }
         mainHandItemPose.setPose(newMainHandPose, isLeftHanded);
@@ -123,7 +124,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     @Override
     public void playAttackAnimation(String name, AnimatedHand animatedHand, float length, float upswing) {
         try {
-            KeyframeAnimation animation = AnimationRegistry.animations.get(name);
+            KeyframeAnimation animation = (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(Identifier.of(name));
             var copy = animation.mutableCopy();
             updateAnimationByCurrentActivity(copy);
             copy.torso.fullyEnablePart(true);
