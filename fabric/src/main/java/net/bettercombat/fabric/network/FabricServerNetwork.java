@@ -15,17 +15,22 @@ import java.util.function.Consumer;
 public class FabricServerNetwork {
     public static void init() {
         // Config stage
+        PayloadTypeRegistry.configurationS2C().register(Packets.ConfigSync.PACKET_ID, Packets.ConfigSync.CODEC);
+        PayloadTypeRegistry.configurationS2C().register(Packets.WeaponRegistrySync.PACKET_ID, Packets.WeaponRegistrySync.CODEC);
+        PayloadTypeRegistry.configurationC2S().register(Packets.Ack.PACKET_ID, Packets.Ack.CODEC);
 
         ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
             // This if block is required! Otherwise the client gets stuck in connection screen
             // if the client cannot handle the packet.
             if (ServerConfigurationNetworking.canSend(handler, Packets.ConfigSync.ID)) {
                 // System.out.println("Starting ConfigurationTask");
-                handler.addTask(new ConfigurationTask(Packets.ConfigSync.serialize(BetterCombatMod.config)));
+                var configJson = Packets.ConfigSync.serialize(BetterCombatMod.getConfig());
+                handler.addTask(new ConfigurationTask(configJson));
             } else {
                 handler.disconnect(Text.literal("Network configuration task not supported: " + ConfigurationTask.name));
             }
         });
+
         ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
             if (ServerConfigurationNetworking.canSend(handler, Packets.WeaponRegistrySync.ID)) {
                 if (WeaponRegistry.getEncodedRegistry().chunks().isEmpty()) {
@@ -38,7 +43,6 @@ public class FabricServerNetwork {
             }
         });
 
-        PayloadTypeRegistry.configurationC2S().register(Packets.Ack.PACKET_ID, Packets.Ack.CODEC);
         ServerConfigurationNetworking.registerGlobalReceiver(Packets.Ack.PACKET_ID, (packet, context) -> {
             // Warning: if you do not call completeTask, the client gets stuck!
             if (packet.code().equals(ConfigurationTask.name)) {
@@ -50,13 +54,15 @@ public class FabricServerNetwork {
         });
 
         // Play stage
-
+        PayloadTypeRegistry.playS2C().register(Packets.AttackSound.PACKET_ID, Packets.AttackSound.CODEC);
+        PayloadTypeRegistry.playS2C().register(Packets.AttackAnimation.PACKET_ID, Packets.AttackAnimation.CODEC);
         PayloadTypeRegistry.playC2S().register(Packets.AttackAnimation.PACKET_ID, Packets.AttackAnimation.CODEC);
+        PayloadTypeRegistry.playC2S().register(Packets.C2S_AttackRequest.PACKET_ID, Packets.C2S_AttackRequest.CODEC);
+
         ServerPlayNetworking.registerGlobalReceiver(Packets.AttackAnimation.PACKET_ID, (packet, context) -> {
             ServerNetwork.handleAttackAnimation(packet, context.server(), context.player());
         });
 
-        PayloadTypeRegistry.playC2S().register(Packets.C2S_AttackRequest.PACKET_ID, Packets.C2S_AttackRequest.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(Packets.C2S_AttackRequest.PACKET_ID, (packet, context) -> {
             ServerNetwork.handleAttackRequest(packet, context.server(), context.player(), context.player().networkHandler);
         });

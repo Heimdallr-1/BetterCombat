@@ -39,6 +39,10 @@ public class BetterCombatMod {
         });
     }
 
+    public static ServerConfig getConfig() {
+        return config;
+    }
+
     private static void loadFallbackConfig() {
         fallbackConfig.load();
         if (fallbackConfig.value == null) {

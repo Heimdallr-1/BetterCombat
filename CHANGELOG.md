@@ -1,6 +1,7 @@
 # 2.0.1
 
 - (NeoForge) Fix faulty inclusion of TinyConfig, crashing alongside Combat Roll mod
+- (Fabric) Fix connection failure to dedicated servers
 
 # 2.0.0
 
