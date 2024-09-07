@@ -1,6 +1,10 @@
+# 2.0.1
+
+- (NeoForge) Fix faulty inclusion of TinyConfig, crashing alongside Combat Roll mod
+
 # 2.0.0
 
-- Support for Minecraft 1.21.0
+- Support for Minecraft 1.21 and 1.21.1
 - Add support for `generic.scale` attribute, to scale attack range
 
 API Changes:
