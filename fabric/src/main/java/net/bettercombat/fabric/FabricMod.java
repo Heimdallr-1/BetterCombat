@@ -11,7 +11,7 @@ public class FabricMod implements ModInitializer {
     public void onInitialize() {
         BetterCombatMod.init();
 
-        ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> {
+        ServerLifecycleEvents.SERVER_STARTING.register((minecraftServer) -> {
             BetterCombatMod.loadWeaponAttributes(minecraftServer);
         });
 
