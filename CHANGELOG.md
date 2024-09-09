@@ -1,3 +1,7 @@
+# 2.0.2
+
+- (NeoForge) Fix missing declaration to Cloth Config causing crash
+
 # 2.0.1
 
 - (NeoForge) Fix faulty inclusion of TinyConfig, crashing alongside Combat Roll mod
