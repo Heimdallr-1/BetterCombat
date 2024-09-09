@@ -1,5 +1,6 @@
 # 2.0.2
 
+- (NeoForge) Fix hand swapping two-handed items, causing offhand item deletion
 - (NeoForge) Fix missing declaration to Cloth Config causing crash
 
 # 2.0.1
