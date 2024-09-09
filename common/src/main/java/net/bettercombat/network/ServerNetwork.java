@@ -34,14 +34,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
-import java.util.UUID;
-
 public class ServerNetwork {
     static final Logger LOGGER = LogUtils.getLogger();
-
-    private static final UUID COMBO_DAMAGE_MODIFIER_ID = UUID.randomUUID();
-    private static final UUID DUAL_WIELDING_MODIFIER_ID = UUID.randomUUID();
-    private static final UUID SWEEPING_MODIFIER_ID = UUID.randomUUID();
 
     public static void handleAttackAnimation(Packets.AttackAnimation packet, MinecraftServer server, ServerPlayerEntity player) {
         ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
@@ -92,124 +86,120 @@ public class ServerNetwork {
         world.getServer().executeSync(() -> {
             ((PlayerAttackProperties)player).setComboCount(request.comboCount());
 
-            double damageBaseMultiplier = 0.0;
-            double range = 18.0;
-            if (attributes != null && attack != null) {
-                range = attributes.attackRange();
+            PlayerAttackHelper.swapHandAttributes(player, hand.isOffHand(), () -> {
 
-                double comboMultiplier = attack.damageMultiplier() - 1;
-                damageBaseMultiplier += comboMultiplier;
-
-                var dualWieldingMultiplier = PlayerAttackHelper.getDualWieldingAttackDamageMultiplier(player, hand) - 1;
-                damageBaseMultiplier += dualWieldingMultiplier;
-
-                if (hand.isOffHand()) {
-                    PlayerAttackHelper.setAttributesForOffHandAttack(player, true);
-                }
-
-                SoundHelper.playSound(world, player, attack.swingSound());
-
-                if (BetterCombatMod.config.allow_reworked_sweeping && request.entityIds().length > 1) {
-                    double multiplier = 0
-                            - (BetterCombatMod.config.reworked_sweeping_maximum_damage_penalty / BetterCombatMod.config.reworked_sweeping_extra_target_count)
-                            * Math.min(BetterCombatMod.config.reworked_sweeping_extra_target_count, request.entityIds().length - 1);
-                    var sweepRatio = player.getAttributeValue(EntityAttributes.PLAYER_SWEEPING_DAMAGE_RATIO);
-
-                    damageBaseMultiplier += multiplier + (BetterCombatMod.config.reworked_sweeping_maximum_damage_penalty * sweepRatio);
-
-                    boolean playEffects = !BetterCombatMod.config.reworked_sweeping_sound_and_particles_only_for_swords
-                            || (hand.itemStack().getItem() instanceof SwordItem);
-                    if (BetterCombatMod.config.reworked_sweeping_plays_sound && playEffects) {
-                        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0f, 1.0f);
-                    }
-                    if (BetterCombatMod.config.reworked_sweeping_emits_particles && playEffects) {
-                        player.spawnSweepAttackParticles();
-                    }
-                }
-            }
-
-            Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> damageModifier = null;
-            if (damageBaseMultiplier != 0) {
-                AttributeModifierHelper.fromModifier(EntityAttributes.GENERIC_ATTACK_DAMAGE, null);
-                damageModifier = AttributeModifierHelper.fromModifier(
-                        EntityAttributes.GENERIC_ATTACK_DAMAGE,
-                        new EntityAttributeModifier(TEMPORARY_ATTACK, damageBaseMultiplier, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE));
-                player.getAttributes().addTemporaryModifiers(damageModifier);
-            }
-
-            var attackCooldown = PlayerAttackHelper.getAttackCooldownTicksCapped(player);
-            var knockbackMultiplier = BetterCombatMod.config.knockback_reduced_for_fast_attacks
-                    ? MathHelper.clamp(attackCooldown / 12.5F, 0.1F, 1F)
-                    : 1F;
-            var lastAttackedTicks = ((LivingEntityAccessor)player).getLastAttackedTicks();
-            if (!useVanillaPacket) {
-                player.setSneaking(request.isSneaking());
-            }
+                double damageBaseMultiplier = 0.0;
+                double range = 18.0;
 
 
-            var validationRangeSquared = range * range * BetterCombatMod.config.target_search_range_multiplier;
-            for (int entityId: request.entityIds()) {
-                // getEntityById(entityId);
-                boolean isBossPart = false;
-                Entity entity = world.getEntityById(entityId);
-                if (entity == null) {
-                    isBossPart = true;
-                    entity = world.getDragonPart(entityId); // Get LivingEntity or DragonPart
-                }
+                if (attributes != null && attack != null) {
+                    range = attributes.attackRange();
 
-                if (entity == null
-                        || (entity.equals(player.getVehicle()) && !TargetHelper.isAttackableMount(entity))
-                        || (entity instanceof ArmorStandEntity && ((ArmorStandEntity)entity).isMarker())) {
-                    continue;
-                }
-                if (entity instanceof LivingEntity livingEntity) {
-                    if (BetterCombatMod.config.allow_fast_attacks) {
-                        livingEntity.timeUntilRegen = 0;
-                    }
-                    if (knockbackMultiplier != 1F) {
-                        ((ConfigurableKnockback)livingEntity).setKnockbackMultiplier_BetterCombat(knockbackMultiplier);
-                    }
-                }
-                ((LivingEntityAccessor) player).setLastAttackedTicks(lastAttackedTicks);
-                // System.out.println("Server - Attacking hand: " + (hand.isOffHand() ? "offhand" : "mainhand") + " CD: " + player.getAttackCooldownProgress(0));
-                if (!isBossPart && useVanillaPacket) {
-                    // System.out.println("HIT - A entity: " + entity.getEntityName() + " id: " + entity.getId() + " class: " + entity.getClass());
-                    PlayerInteractEntityC2SPacket vanillaAttackPacket = PlayerInteractEntityC2SPacket.attack(entity, request.isSneaking());
-                    handler.onPlayerInteractEntity(vanillaAttackPacket);
-                } else {
-                    // System.out.println("HIT - B entity: " + entity.getEntityName() + " id: " + entity.getId() + " class: " + entity.getClass());
-                    if (!BetterCombatMod.config.server_target_range_validation
-                            || player.squaredDistanceTo(entity) <= validationRangeSquared) {
-                        if (entity instanceof ItemEntity || entity instanceof ExperienceOrbEntity || entity instanceof PersistentProjectileEntity || entity == player) {
-                            handler.disconnect(Text.translatable("multiplayer.disconnect.invalid_entity_attacked"));
-                            LOGGER.warn("Player {} tried to attack an invalid entity", (Object)player.getName().getString());
-                            return;
+                    double comboMultiplier = attack.damageMultiplier() - 1;
+                    damageBaseMultiplier += comboMultiplier;
+
+                    var dualWieldingMultiplier = PlayerAttackHelper.getDualWieldingAttackDamageMultiplier(player, hand) - 1;
+                    damageBaseMultiplier += dualWieldingMultiplier;
+
+                    SoundHelper.playSound(world, player, attack.swingSound());
+
+                    if (BetterCombatMod.config.allow_reworked_sweeping && request.entityIds().length > 1) {
+                        double multiplier = 0
+                                - (BetterCombatMod.config.reworked_sweeping_maximum_damage_penalty / BetterCombatMod.config.reworked_sweeping_extra_target_count)
+                                * Math.min(BetterCombatMod.config.reworked_sweeping_extra_target_count, request.entityIds().length - 1);
+                        var sweepRatio = player.getAttributeValue(EntityAttributes.PLAYER_SWEEPING_DAMAGE_RATIO);
+
+                        damageBaseMultiplier += multiplier + (BetterCombatMod.config.reworked_sweeping_maximum_damage_penalty * sweepRatio);
+
+                        boolean playEffects = !BetterCombatMod.config.reworked_sweeping_sound_and_particles_only_for_swords
+                                || (hand.itemStack().getItem() instanceof SwordItem);
+                        if (BetterCombatMod.config.reworked_sweeping_plays_sound && playEffects) {
+                            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0f, 1.0f);
                         }
-                        player.attack(entity);
+                        if (BetterCombatMod.config.reworked_sweeping_emits_particles && playEffects) {
+                            player.spawnSweepAttackParticles();
+                        }
                     }
                 }
-                if (entity instanceof LivingEntity livingEntity) {
-                    if (knockbackMultiplier != 1F) {
-                        ((ConfigurableKnockback)livingEntity).setKnockbackMultiplier_BetterCombat(1F);
+
+                Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> damageModifier = null;
+                if (damageBaseMultiplier != 0) {
+                    AttributeModifierHelper.fromModifier(EntityAttributes.GENERIC_ATTACK_DAMAGE, null);
+                    damageModifier = AttributeModifierHelper.fromModifier(
+                            EntityAttributes.GENERIC_ATTACK_DAMAGE,
+                            new EntityAttributeModifier(TEMPORARY_ATTACK, damageBaseMultiplier, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+                    player.getAttributes().addTemporaryModifiers(damageModifier);
+                }
+
+                var attackCooldown = PlayerAttackHelper.getAttackCooldownTicksCapped(player);
+                var knockbackMultiplier = BetterCombatMod.config.knockback_reduced_for_fast_attacks
+                        ? MathHelper.clamp(attackCooldown / 12.5F, 0.1F, 1F)
+                        : 1F;
+                var lastAttackedTicks = ((LivingEntityAccessor) player).getLastAttackedTicks();
+                if (!useVanillaPacket) {
+                    player.setSneaking(request.isSneaking());
+                }
+
+
+                var validationRangeSquared = range * range * BetterCombatMod.config.target_search_range_multiplier;
+                for (int entityId : request.entityIds()) {
+                    // getEntityById(entityId);
+                    boolean isBossPart = false;
+                    Entity entity = world.getEntityById(entityId);
+                    if (entity == null) {
+                        isBossPart = true;
+                        entity = world.getDragonPart(entityId); // Get LivingEntity or DragonPart
+                    }
+
+                    if (entity == null
+                            || (entity.equals(player.getVehicle()) && !TargetHelper.isAttackableMount(entity))
+                            || (entity instanceof ArmorStandEntity && ((ArmorStandEntity) entity).isMarker())) {
+                        continue;
+                    }
+                    if (entity instanceof LivingEntity livingEntity) {
+                        if (BetterCombatMod.config.allow_fast_attacks) {
+                            livingEntity.timeUntilRegen = 0;
+                        }
+                        if (knockbackMultiplier != 1F) {
+                            ((ConfigurableKnockback) livingEntity).setKnockbackMultiplier_BetterCombat(knockbackMultiplier);
+                        }
+                    }
+                    ((LivingEntityAccessor) player).setLastAttackedTicks(lastAttackedTicks);
+                    // System.out.println("Server - Attacking hand: " + (hand.isOffHand() ? "offhand" : "mainhand") + " CD: " + player.getAttackCooldownProgress(0));
+                    if (!isBossPart && useVanillaPacket) {
+                        // System.out.println("HIT - A entity: " + entity.getEntityName() + " id: " + entity.getId() + " class: " + entity.getClass());
+                        PlayerInteractEntityC2SPacket vanillaAttackPacket = PlayerInteractEntityC2SPacket.attack(entity, request.isSneaking());
+                        handler.onPlayerInteractEntity(vanillaAttackPacket);
+                    } else {
+                        // System.out.println("HIT - B entity: " + entity.getEntityName() + " id: " + entity.getId() + " class: " + entity.getClass());
+                        if (!BetterCombatMod.config.server_target_range_validation
+                                || player.squaredDistanceTo(entity) <= validationRangeSquared) {
+                            if (entity instanceof ItemEntity || entity instanceof ExperienceOrbEntity || entity instanceof PersistentProjectileEntity || entity == player) {
+                                handler.disconnect(Text.translatable("multiplayer.disconnect.invalid_entity_attacked"));
+                                LOGGER.warn("Player {} tried to attack an invalid entity", (Object) player.getName().getString());
+                                return;
+                            }
+                            player.attack(entity);
+                        }
+                    }
+                    if (entity instanceof LivingEntity livingEntity) {
+                        if (knockbackMultiplier != 1F) {
+                            ((ConfigurableKnockback) livingEntity).setKnockbackMultiplier_BetterCombat(1F);
+                        }
                     }
                 }
-            }
 
-            if (!useVanillaPacket) {
-                player.updateLastActionTime();
-            }
-
+                if (!useVanillaPacket) {
+                    player.updateLastActionTime();
+                }
 
 
-            if (damageModifier != null) {
-                player.getAttributes().removeModifiers(damageModifier);
-            }
+                if (damageModifier != null) {
+                    player.getAttributes().removeModifiers(damageModifier);
+                }
 
-            if (hand.isOffHand()) {
-                PlayerAttackHelper.setAttributesForOffHandAttack(player, false);
-            }
-
-            ((PlayerAttackProperties)player).setComboCount(-1);
+                ((PlayerAttackProperties) player).setComboCount(-1);
+            });
         });
     }
 }

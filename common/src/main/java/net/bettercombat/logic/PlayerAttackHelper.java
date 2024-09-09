@@ -1,26 +1,15 @@
 package net.bettercombat.logic;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 import net.bettercombat.BetterCombatMod;
 import net.bettercombat.api.AttackHand;
 import net.bettercombat.api.ComboState;
 import net.bettercombat.api.WeaponAttributes;
 import net.bettercombat.utils.AttributeModifierHelper;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShieldItem;
-import net.minecraft.registry.entry.RegistryEntry;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-
-import static net.minecraft.entity.EquipmentSlot.MAINHAND;
 
 public class PlayerAttackHelper {
     public static float getDualWieldingAttackDamageMultiplier(PlayerEntity player, AttackHand hand) {
@@ -165,15 +154,33 @@ public class PlayerAttackHelper {
 
     private static final Object attributesLock = new Object();
 
-    public static void offhandAttributes(PlayerEntity player, Runnable runnable) {
-        synchronized (attributesLock) {
-            setAttributesForOffHandAttack(player, true);
+    public static void swapHandAttributes(PlayerEntity player, Runnable runnable) {
+        swapHandAttributes(player, true, runnable);
+    }
+
+    public static void swapHandAttributes(PlayerEntity player, boolean useOffHand, Runnable runnable) {
+        if (!useOffHand) {
             runnable.run();
+            return;
+        }
+        synchronized (player) {
+            var inventory = player.getInventory();
+            var mainHandStack = player.getMainHandStack();
+            var offHandStack = inventory.offHand.get(0);
+
+            setAttributesForOffHandAttack(player, true);
+            inventory.main.set(inventory.selectedSlot, offHandStack);
+            inventory.offHand.set(0, offHandStack);
+
+            runnable.run();
+
+            inventory.main.set(inventory.selectedSlot, mainHandStack);
+            inventory.offHand.set(0, offHandStack);
             setAttributesForOffHandAttack(player, false);
         }
     }
 
-    public static void setAttributesForOffHandAttack(PlayerEntity player, boolean useOffHand) {
+    private static void setAttributesForOffHandAttack(PlayerEntity player, boolean useOffHand) {
         var mainHandStack = player.getMainHandStack();
         var offHandStack = player.getOffHandStack();
         ItemStack add;
