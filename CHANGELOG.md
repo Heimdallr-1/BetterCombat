@@ -1,3 +1,8 @@
+# 2.0.3
+
+- Fix hands while laddering with two-handed weapons
+- Fix hands while Elytra flying with two-handed weapons
+
 # 2.0.2
 
 - Fix enchantments on from offhand weapon strikes not being applied

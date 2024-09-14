@@ -78,6 +78,8 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         if (player.handSwinging // Official mapping name: `isHandBusy`
                 || player.isSwimming()
                 || player.isUsingItem()
+                || player.isClimbing()
+                || player.isFallFlying()
                 || Platform.isCastingSpell(player)
                 || CrossbowItem.isCharged(mainHandStack)) {
             mainHandBodyPose.setPose(null, isLeftHanded);
