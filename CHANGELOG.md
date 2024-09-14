@@ -2,6 +2,7 @@
 
 - Fix hands while laddering with two-handed weapons
 - Fix hands while Elytra flying with two-handed weapons
+- Add Vietnamese translation, thanks to @godkyo98
 
 # 2.0.2
 
